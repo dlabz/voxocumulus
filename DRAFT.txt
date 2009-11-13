@@ -1,40 +1,12 @@
 
-//class read bitmap
-
-//fetches BINARY FILES synchronously using XMLHttpRequest
-load_url = function(url) {
-netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
-var req = new XMLHttpRequest();
-req.open('GET',url,false);
-//XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
-req.overrideMimeType('text/plain; charset=x-user-defined');
-req.send(null);
-if (req.status != 200) return '';
-return req.responseText;
-}
-
-
-////end class read bmp
-
-
-
-
-
-//class pixel3D array
-
-
-var filestream = load_url(url);
-var abyte = filestream.charCodeAt(x) & 0xff;
-
-create a header encoder/decoder ///refere to BMPEncoder.as
-
 ////single object///
-
+voxelArray.uid is a UID of that block.
 
 data is packed in a 3D array. voxelArray[x][y][z] will get a 4 letter string representing ARGB(0xffffffff) values of a pixel/voxel at x,y,z coordinates
-properties .a .r .g .b get single channel
+////////optional: properties .a .r .g .b get single channel
 
-for nesting cubes everyvalue should have a .refersTo property where uid of a voxel block will be stored. Based on a onScreen size of a block, if it's bigger than something render will check if refersTo != 0 and accordingly exchange it with a block it referes to
+
+for nesting cubes every value should have a and .refersTo property where uid of a voxel block will be stored. Based on a onScreen size of a block, if it's bigger than something render will check if refersTo != 0 and accordingly exchange it with a block it referes to
 
 //end single object
 
@@ -46,6 +18,7 @@ for nesting cubes everyvalue should have a .refersTo property where uid of a vox
 modeling function will be used to creat a 3d object from a voxelArray. It will keep track of references and use them to create maps(bump or vertex) and skin each voxel bigg enugh with it's reference. 
 
 This function should either run on a separate tread or be fake-treaded to allow instant display of loaded/processed data
+
 ///endmodelfunction
 
 
