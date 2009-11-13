@@ -1,0 +1,50 @@
+//class read bitmap
+//fetches BINARY FILES synchronously using XMLHttpRequest
+load_url = function(url) {
+netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+var req = new XMLHttpRequest();
+req.open('GET',url,false);
+//XHR binary charset opt by Marcus Granado 2006 [http://mgran.blogspot.com]
+req.overrideMimeType('text/plain; charset=x-user-defined');
+req.send(null);
+if (req.status != 200) return '';
+return req.responseText;
+}
+
+
+////class read bmp
+
+
+
+
+
+//class pixel3D array
+
+
+var filestream = load_url(url);
+var abyte = filestream.charCodeAt(x) & 0xff;
+
+create a header encoder/decoder
+
+////
+
+
+data is packed in a 3D array. array[x][y][z] will get a 4 letter string representing ARGB(0xffffffff) values of a pixel/voxel at x,y,z coordinates
+properties .a .r .g .b get single channel
+
+
+
+
+
+Use a function to convert 3d array to 1D array for encoding  and decoding a bitmap
+
+////
+
+for operations on bitmap create getPixel32(x,y) and setPixel32(x,y,c)
+
+/////
+refferencesç
+
+http://neil.fraser.name/software/bmp_lib/bmp_lib.js
+http://web.archive.org/web/20071103070418/http://mgran.blogspot.com/2006/08/downloading-binary-streams-with.html
+
