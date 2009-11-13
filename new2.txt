@@ -1,3 +1,6 @@
+used to load bitmap to javascript
+
+
 //class read bitmap
 //fetches BINARY FILES synchronously using XMLHttpRequest
 load_url = function(url) {
@@ -23,24 +26,6 @@ return req.responseText;
 
 var filestream = load_url(url);
 var abyte = filestream.charCodeAt(x) & 0xff;
-
-create a header encoder/decoder
-
-////
-
-
-data is packed in a 3D array. array[x][y][z] will get a 4 letter string representing ARGB(0xffffffff) values of a pixel/voxel at x,y,z coordinates
-properties .a .r .g .b get single channel
-
-
-
-
-
-Use a function to convert 3d array to 1D array for encoding  and decoding a bitmap
-
-////
-
-for operations on bitmap create getPixel32(x,y) and setPixel32(x,y,c)
 
 /////
 refferencesç
