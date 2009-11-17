@@ -70,36 +70,7 @@ var g_clock = 0;
 var g_timeMult = 1;
 var g_finished = false;  // for selenium testing.
  
-function createInstances(pack, shape) {
-  // make a grid of transforms and put a cube instance on each one and read color from array
-  for (var x = 0; x < vMatrix.size; x++) {
-    for (var y = 0; y < vMatrix.size; y++) {
-      for (var z = 0; z < vMatrix.size; z++) {
-	  	var thisVox = new Object(); 
-		thisVox.ARGB = vMatrix[x][y][z];
-		thisVox.R = ((0x00FF0000 & thisVox.ARGB) >> 16)/255;
-		thisVox.G = ((0x0000FF00 & thisVox.ARGB) >> 8)/255;
-		thisVox.B = ((0x000000FF & thisVox.ARGB) )/255;
-		//alert(thisVox.ARGB + " " + thisVox.R);
-		
-		if (thisVox.ARGB != 0){
-			var transform = pack.createObject('Transform');
-        transform.parent = g_client.root;
-        transform.addShape(shape);
-        transform.translate((x - vMatrix.size/2 ) * 25,
-                            (y - vMatrix.size/2 ) * 25,
-                            (z - vMatrix.size/2 ) * 25);
-        transform.createParam('diffuse', 'ParamFloat4').value = [
-            thisVox.R,
-            thisVox.G,
-            thisVox.B,
-            1.0];	
-		}
-        
-      }
-    }
-  }
-}
+
  
 /**
  * Creates the client area.
@@ -140,19 +111,59 @@ function initStep2(clientElements) {
   var material = o3djs.material.createBasicMaterial(
     g_pack,
     g_viewInfo,
-    [1, 1, 1, 1]);
- 
+    [1, 1, 1, 1],true);
+ // var shape = aCube.createVoxel(g_pack, material, 25);
   // Create a sphere.
  // var shape = o3djs.primitives.createSphere(g_pack, material, 25, 10, 12);
- var shape = o3djs.primitives.createCube(g_pack, material, 25);
-  createInstances(g_pack, shape);
+// var shape = o3djs.primitives.createCube(g_pack, material, 30);
+ //var shape = o3djs.primitives.createPlane(g_pack, material, 25, 25,1,1);
+ 
+  createInstances(g_pack,material);
  
   // Setup an onrender callback for animation.
   g_client.setRenderCallback(onrender);
  
   g_finished = true;  // for selenium testing.
 }
- 
+function createInstances(pack,material) {
+	
+ //alert(material);
+	//alert("creating instances")
+  aCube.randomize();
+  aCube.rebuild();
+  // make a grid of transforms and put a cube instance on each one and read color from array
+  
+  for (var x = 0; x < aCube.size; x++) {
+    for (var y = 0; y < aCube.size; y++) {
+      for (var z = 0; z < aCube.size; z++) {
+	  	
+		
+	if (aCube.voxels[x][y][z] != null){
+		var thisVox = new Object();	 
+		thisVox.ARGB = aCube.voxels[x][y][z].ARGB;
+		thisVox.R = ((0x00FF0000 & thisVox.ARGB) >> 16)/255;
+		thisVox.G = ((0x0000FF00 & thisVox.ARGB) >> 8)/255;
+		thisVox.B = ((0x000000FF & thisVox.ARGB) )/255;
+		//alert(thisVox.ARGB + " " + thisVox.R);
+		
+			var transform = pack.createObject('Transform');
+        transform.parent = g_client.root;
+		//alert("caling vertex"+x+" "+y+" "+z)
+        transform.addShape(aCube.createVoxel(pack,material,30,x,y,z)); //shape
+        transform.translate((x - aCube.size/2 ) * 35,
+                            (y - aCube.size/2 ) * 35,
+                            (z - aCube.size/2 ) * 35);
+        transform.createParam('diffuse', 'ParamFloat4').value = [
+            thisVox.R,
+            thisVox.G,
+            thisVox.B,
+            0.7];	
+		};
+        
+      };
+    };
+  };
+}; 
 // spin the camera.
 function onrender(render_event) {
   // Get the number of seconds since the last render.
