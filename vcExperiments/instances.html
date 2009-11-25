@@ -111,12 +111,8 @@ function initStep2(clientElements) {
   var material = o3djs.material.createBasicMaterial(
     g_pack,
     g_viewInfo,
-    [1, 1, 1, 1],true);
- // var shape = aCube.createVoxel(g_pack, material, 25);
-  // Create a sphere.
- // var shape = o3djs.primitives.createSphere(g_pack, material, 25, 10, 12);
-// var shape = o3djs.primitives.createCube(g_pack, material, 30);
- //var shape = o3djs.primitives.createPlane(g_pack, material, 25, 25,1,1);
+    [1, 1, 1, 0],true);
+
  
   createInstances(g_pack,material);
  
@@ -129,42 +125,101 @@ function createInstances(pack,material) {
 	
  //alert(material);
 	//alert("creating instances")
-  aCube.randomize();
-  aCube.rebuild();
+  theCube = new aCube(16);
+  //theCube.size = 16;
+  theCube.randomize();
+  theCube.rebuild();
   // make a grid of transforms and put a cube instance on each one and read color from array
   
-  for (var x = 0; x < aCube.size; x++) {
-    for (var y = 0; y < aCube.size; y++) {
-      for (var z = 0; z < aCube.size; z++) {
-	  	
-		
-	if (aCube.voxels[x][y][z] != null){
-		var thisVox = new Object();	 
-		thisVox.ARGB = aCube.voxels[x][y][z].ARGB;
-		thisVox.R = ((0x00FF0000 & thisVox.ARGB) >> 16)/255;
-		thisVox.G = ((0x0000FF00 & thisVox.ARGB) >> 8)/255;
-		thisVox.B = ((0x000000FF & thisVox.ARGB) )/255;
-		//alert(thisVox.ARGB + " " + thisVox.R);
+  for (var x = 0; x < theCube.size; x++) {
+  	theCube.texture = new Array();
+  	theCube.texture[x] = g_pack.createTexture2D(theCube.size, theCube.size, g_o3d.Texture.ARGB8, 1, false);
+	var pixels = [];
+    for (var y = 0; y < theCube.size; y++) {
+	      for (var z = 0; z < theCube.size; z++) {
+			if (theCube.voxels[x][y][z] != null){
+				//var thisVox = new aVoxel();	 
+				//aVoxel.ARGB = theCube.voxels[x][y][z].ARGB;
+				
+				//alert(theCube.voxels[x][y][z].ARGB + " " + theCube.voxels[x][y][z].R());
+				pixels.push(theCube.voxels[x][y][z].A(),theCube.voxels[x][y][z].R(),theCube.voxels[x][y][z].G(),theCube.voxels[x][y][z].B());
 		
 			var transform = pack.createObject('Transform');
         transform.parent = g_client.root;
 		//alert("caling vertex"+x+" "+y+" "+z)
-        transform.addShape(aCube.createVoxel(pack,material,30,x,y,z)); //shape
-        transform.translate((x - aCube.size/2 ) * 35,
-                            (y - aCube.size/2 ) * 35,
-                            (z - aCube.size/2 ) * 35);
+        transform.addShape(theCube.createVoxel(pack,material,30,x,y,z)); //shape
+        transform.translate((x - theCube.size/2 ) * 35,
+                            (y - theCube.size/2 ) * 35,
+                            (z - theCube.size/2 ) * 35);
         transform.createParam('diffuse', 'ParamFloat4').value = [
-            thisVox.R,
-            thisVox.G,
-            thisVox.B,
+            theCube.voxels[x][y][z].R(),
+            theCube.voxels[x][y][z].G(),
+            theCube.voxels[x][y][z].B(),
             0.7];	
+		}else{
+			pixels.push(0,0,0,0);
 		};
         
       };
     };
+	//alert(pixels.length);
+	theCube.texture[x].set(0, pixels);
   };
 }; 
-// spin the camera.
+
+function makeShape(texture) {
+  // Create a material.
+  var myMaterial = o3djs.material.createMaterialFromFile(
+      g_pack,
+      'shaders/texture-only.shader',
+      g_viewInfo.performanceDrawList);
+
+  // Creates a quad.
+  var myShape = o3djs.primitives.createPlane(g_pack,
+                                             myMaterial,
+                                             32,  // width
+                                             16,  // height
+                                             1,  // quads across
+                                             1);  // quads down
+
+  // Get the material's sampler parameter, get the sampler on it and set its
+  // texture.
+  var sampler_param = myMaterial.getParam('texSampler0');
+  var sampler = sampler_param.value;
+
+  // Set the texture to use.
+  sampler.texture = texture;
+	//sampler.minFilter = g_o3d.Sampler.POINT;
+	sampler.mipFilter = g_o3d.Sampler.POINT;
+	sampler.magFilter = g_o3d.Sampler.POINT;
+	//sampler.mipFilter = g_o3d.Sampler.FilterType.POINT;
+  // adjust the scale of our transform to match the aspect ratio of
+  // the texture. Of course we could also have waited until now to build
+  // our plane and set its width and height to match instead of scaling
+  // here.
+  var textureWidth = texture.width;
+  var textureHeight = texture.height;
+  var hScale = 0.5;
+  var vScale = 1;
+  if (textureWidth > textureHeight) {
+    vScale = textureHeight / textureWidth;
+  } else if (textureHeight > textureWidth) {
+    hScale = textureWidth / textureHeight;
+  }
+  // We now attach our quad to the root of the transform graph.
+  // We do this after the texture has loaded, otherwise we'd be attempting
+  // to display something invalid.
+
+  // Make a transform for each quad.
+  var transform = g_pack.createObject('Transform');
+  transform.scale(hScale, 1, vScale);
+  transform.addShape(myShape);
+  transform.parent = g_client.root;
+  g_finished = true;
+  return myShape;
+}
+
+// spin the camera.//TODO: fps camera
 function onrender(render_event) {
   // Get the number of seconds since the last render.
   var elapsedTime = render_event.elapsedTime;
